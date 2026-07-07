@@ -31,3 +31,17 @@ fn run(source: &str) {
         println!("{token}");
     }
 }
+
+/*
+will need a struct after to properly give errors
+*/
+enum Token {
+    LeftParen,
+    RightParen,
+    Atom(String),
+    And,
+    Or,
+    Iff,
+    Implies,
+    Not,
+}
