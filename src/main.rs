@@ -27,8 +27,7 @@ fn run_file(path: &str) -> ExitCode {
 }
 
 fn run(source: &str) {
-    let tokens: Vec<_> = source.split(" ").collect();
-    for token in tokens {
-        println!("{}", token);
+    for token in source.split_whitespace() {
+        println!("{token}");
     }
 }
