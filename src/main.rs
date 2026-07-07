@@ -2,7 +2,6 @@ use std::{env, fs, process::ExitCode};
 
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
-    println!("{:?}", args);
 
     match args.as_slice() {
         [_] => ExitCode::from(64),
@@ -15,15 +14,19 @@ fn main() -> ExitCode {
 }
 
 fn run_file(path: &str) -> ExitCode {
-    let content = match fs::read_to_string(path) {
-        Ok(c) => c,
-        Err(e) => return ExitCode::FAILURE,
-    };
-    run(content);
-    ExitCode::SUCCESS
+    match fs::read_to_string(path) {
+        Ok(content) => {
+            run(&content);
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            eprintln!("tfl: cannot read '{path}': {e}");
+            ExitCode::FAILURE
+        }
+    }
 }
 
-fn run(source: String) {
+fn run(source: &str) {
     let tokens: Vec<_> = source.split(" ").collect();
     for token in tokens {
         println!("{}", token);
