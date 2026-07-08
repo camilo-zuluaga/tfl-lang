@@ -1,7 +1,6 @@
 use std::{env, fs, process::ExitCode};
 
 mod lexer;
-use lexer::Scanner;
 
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
@@ -30,7 +29,7 @@ fn run_file(path: &str) -> ExitCode {
 }
 
 fn run(source: &str) {
-    match Scanner::new(source).scan_tokens() {
+    match lexer::tokenize(source) {
         Ok(tokens) => println!("{tokens:?}"),
         Err(e) => eprintln!("lex error {e:?}"),
     }
