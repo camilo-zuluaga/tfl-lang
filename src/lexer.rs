@@ -1,7 +1,7 @@
 /*
 will need a struct after to properly give errors
 */
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Token {
     LeftParen,
     RightParen,
@@ -21,12 +21,14 @@ pub struct Scanner {
 impl Scanner {
     pub fn new(source: &str) -> Scanner {
         Scanner {
+            // TODO: fix
             source: source.to_string(),
             tokens: Vec::new(),
         }
     }
 
     pub fn scan_tokens(self) -> Result<Vec<Token>, LexError> {
+        // TODO: function free of ownership
         let mut tokens = self.tokens;
         let mut chars = self.source.chars().peekable();
 
@@ -61,4 +63,24 @@ impl Scanner {
 #[derive(Debug)]
 pub enum LexError {
     Unexpected(char),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn scans_unicode() {
+        let t = Scanner::new("( ->  ∧ ¬ )").scan_tokens().unwrap();
+        assert_eq!(
+            t,
+            vec![
+                Token::LeftParen,
+                Token::Implies,
+                Token::And,
+                Token::Not,
+                Token::RightParen
+            ]
+        );
+    }
 }
