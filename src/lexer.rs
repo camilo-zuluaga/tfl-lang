@@ -19,7 +19,7 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
 
     while let Some(c) = chars.next() {
         match c {
-            ' ' | '\t' => {}
+            ' ' | '\t' | '\n' => {}
             '(' => tokens.push(Token::LeftParen),
             ')' => tokens.push(Token::RightParen),
             '~' | '!' | '¬' => tokens.push(Token::Not),
@@ -27,9 +27,19 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
             '|' | '∨' => tokens.push(Token::Or),
             '→' => tokens.push(Token::Implies),
             '↔' => tokens.push(Token::Iff),
-            // i guess we should also accept <-> or ->
+
+            // biconditionals, and conditionals can also be represented in the form
+            // <-> or ->
             '-' => match chars.next() {
                 Some('>') => tokens.push(Token::Implies),
+                Some('-') => {
+                    while let Some(&d) = chars.peek() {
+                        if d == '\n' {
+                            break;
+                        }
+                        chars.next();
+                    }
+                }
                 _ => {
                     return Err(LexError::Incomplete {
                         expected: "-> after '-",
@@ -37,7 +47,6 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
                     });
                 }
             },
-            // we should expect the <-> biconditional
             '<' => match (chars.next(), chars.next()) {
                 (Some('-'), Some('>')) => tokens.push(Token::Iff),
                 _ => {
@@ -47,7 +56,8 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
                     });
                 }
             },
-            // if it is uppercase it must be a symbolization key
+
+            // an atomic sentence must be a capital letter
             c if c.is_ascii_uppercase() => {
                 let mut name = String::from(c);
                 while let Some(&d) = chars.peek() {
