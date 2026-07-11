@@ -18,7 +18,7 @@ pub enum Token {
 type Cursor<'a> = Peekable<Chars<'a>>;
 
 fn skip_comment(chars: &mut Cursor) {
-    while chars.peek().is_some_and(|&d| d == '\n') {
+    while chars.peek().is_some_and(|&d| d != '\n') {
         chars.next();
     }
 }
@@ -77,7 +77,7 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
                 expect(&mut chars, '-', "'-' after '<'")?;
                 expect(&mut chars, '>', "'>' after '<-'")?;
                 tokens.push(Token::Iff);
-            },
+            }
 
             c if c.is_ascii_uppercase() => tokens.push(lex_atom(c, &mut chars)),
             other => return Err(LexError::Unexpected(other)),
@@ -119,10 +119,11 @@ mod tests {
 
     #[test]
     fn scans_unicode() {
-        let t = tokenize("(P → Q ∧ ¬R)").unwrap();
+        let t = tokenize("((P → Q ∧ ¬R) ∧ (Q ∨ R))").unwrap();
         assert_eq!(
             t,
             vec![
+                Token::LeftParen,
                 Token::LeftParen,
                 Token::Atom("P".into()),
                 Token::Implies,
@@ -130,6 +131,13 @@ mod tests {
                 Token::And,
                 Token::Not,
                 Token::Atom("R".into()),
+                Token::RightParen,
+                Token::And,
+                Token::LeftParen,
+                Token::Atom("Q".into()),
+                Token::Or,
+                Token::Atom("R".into()),
+                Token::RightParen,
                 Token::RightParen
             ]
         );
