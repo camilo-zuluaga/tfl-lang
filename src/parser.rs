@@ -67,7 +67,7 @@ impl Parser {
         let formula = self.sentence()?;
         match self.advance() {
             None => Ok(formula),
-            Some(t) => Err(ParseError::TrailingTokens(t))
+            Some(t) => Err(ParseError::TrailingTokens(t)),
         }
     }
 
@@ -116,7 +116,28 @@ pub enum ParseError {
     Expected { want: Token, found: Option<Token> },
     UnexpectedStart(Option<Token>),
     ExpectedConnective(Option<Token>),
-    TrailingTokens(Token)
+    TrailingTokens(Token),
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ParseError::Expected {
+                want,
+                found: Some(c),
+            } => write!(f, "want {want}, found {c}"),
+            ParseError::Expected { want, found: None } => write!(f, "want {want}, found nothing"),
+            ParseError::UnexpectedStart(Some(t)) => write!(f, "expected a formula, found {t}"),
+            ParseError::UnexpectedStart(None) => write!(f, "expected a formula, but input ended"),
+            ParseError::ExpectedConnective(Some(t)) => {
+                write!(f, "expected a connective, found {t}")
+            }
+            ParseError::ExpectedConnective(None) => {
+                write!(f, "expected a connective, but input ended")
+            }
+            ParseError::TrailingTokens(t) => write!(f, "unexpected token after formula: {t}"),
+        }
+    }
 }
 
 #[cfg(test)]
