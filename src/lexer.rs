@@ -3,7 +3,7 @@ use std::{fmt, iter::Peekable, str::Chars};
 /*
 will need a struct after to properly give errors
 */
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Token {
     LeftParen,
     RightParen,
