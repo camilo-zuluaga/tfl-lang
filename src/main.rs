@@ -1,4 +1,8 @@
-use std::{env, fs, io::{self, Write}, process::ExitCode};
+use std::{
+    env, fs,
+    io::{self, Write},
+    process::ExitCode,
+};
 
 use crate::parser::Parser;
 
