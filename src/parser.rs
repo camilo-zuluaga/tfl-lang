@@ -140,6 +140,8 @@ impl fmt::Display for ParseError {
     }
 }
 
+impl std::error::Error for ParseError {}
+
 #[cfg(test)]
 mod tests {
     use crate::lexer::tokenize;
