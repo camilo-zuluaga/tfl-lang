@@ -1,8 +1,9 @@
 use core::fmt;
-use std::{array::IntoIter, fmt::write, iter::Peekable};
+use std::{fmt::write, iter::Peekable, vec::IntoIter};
 
-use crate::lexer::Token::{self, Atom, Not};
+use crate::lexer::Token::{self};
 
+#[derive(Debug, PartialEq)]
 pub enum Formula {
     Atom(String),
     Not(Box<Formula>),
@@ -47,12 +48,70 @@ impl fmt::Display for Formula {
     }
 }
 
-// pub struct Parser {
-//     tokens: Peekable<IntoIter<Token>>,
-// }
+pub struct Parser {
+    tokens: Peekable<IntoIter<Token>>,
+}
+
+impl Parser {
+    pub fn parse(t: Vec<Token>) -> Result<Formula, ParseError> {
+        let pit = t.into_iter().peekable();
+        let mut p = Parser { tokens: pit };
+        p.sentence()
+    }
+
+    fn advance(&mut self) -> Option<Token> {
+        self.tokens.next()
+    }
+
+    fn peek(&mut self) -> Option<&Token> {
+        self.tokens.peek()
+    }
+
+    fn expect(&mut self, want: Token) -> Result<(), ParseError> {
+        match self.advance() {
+            Some(t) if t == want => Ok(()),
+            _ => Err(ParseError::Expected()),
+        }
+    }
+
+    fn sentence(&mut self) -> Result<Formula, ParseError> {
+        match self.advance() {
+            Some(Token::Atom(name)) => Ok(Formula::Atom(name)),
+
+            Some(Token::Not) => {
+                let inner = self.sentence()?;
+                Ok(Formula::not(inner))
+            }
+
+            Some(Token::LeftParen) => {
+                let left = self.sentence()?;
+                let op = self.advance();
+                let right = self.sentence()?;
+                self.expect(Token::RightParen)?;
+
+                match op {
+                    Some(Token::And) => Ok(Formula::and(left, right)),
+                    Some(Token::Or) => Ok(Formula::or(left, right)),
+                    Some(Token::Implies) => Ok(Formula::implies(left, right)),
+                    Some(Token::Iff) => Ok(Formula::iff(left, right)),
+                    found => Err(ParseError::Expected()),
+                }
+            }
+
+            found => Err(ParseError::Expected()),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ParseError {
+    Expected(),
+}
 
 #[cfg(test)]
 mod tests {
+    use crate::{lexer::tokenize, parser};
+
     use super::*;
     use Formula as F;
 
@@ -75,5 +134,15 @@ mod tests {
             F::or(F::atom("Q"), F::atom("R")),
         );
         assert_eq!(f.to_string(), "(((P → Q) ∧ ¬R) ∧ (Q ∨ R))")
+    }
+
+    #[test]
+    fn lexer_and_parser_compose() {
+        let tokens = tokenize("(P -> ~Q)").unwrap(); // lexer: string  → tokens
+        let tree = Parser::parse(tokens).unwrap(); // parser: tokens → tree
+        assert_eq!(
+            tree,
+            Formula::implies(Formula::atom("P"), Formula::not(Formula::atom("Q")))
+        );
     }
 }
