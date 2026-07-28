@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{fmt::write, iter::Peekable, vec::IntoIter};
+use std::{iter::Peekable, vec::IntoIter};
 
 use crate::lexer::Token::{self};
 
@@ -147,6 +147,8 @@ mod tests {
     use super::*;
     use Formula as F;
 
+    const LONG_TFL_SENTENCE: &str = "(((P → Q) ∧ ¬R) ∧ (Q ∨ R))";
+
     #[test]
     fn prints_implies_with_negation() {
         let f = F::implies(F::atom("P"), F::not(F::atom("Q")));
@@ -165,16 +167,26 @@ mod tests {
             F::and(F::implies(F::atom("P"), F::atom("Q")), F::not(F::atom("R"))),
             F::or(F::atom("Q"), F::atom("R")),
         );
-        assert_eq!(f.to_string(), "(((P → Q) ∧ ¬R) ∧ (Q ∨ R))")
+        assert_eq!(f.to_string(), LONG_TFL_SENTENCE)
     }
 
     #[test]
     fn lexer_and_parser_compose() {
         let tokens = tokenize("(P -> ~Q)").unwrap(); // lexer: string  → tokens
         let tree = Parser::new(tokens).parse().unwrap(); // parser: tokens → tree
+        assert_eq!(tree, F::implies(F::atom("P"), F::not(F::atom("Q"))));
+    }
+
+    #[test]
+    fn lexer_and_parser_compose_long() {
+        let tokens = tokenize(LONG_TFL_SENTENCE).unwrap();
+        let tree = Parser::new(tokens).parse().unwrap();
         assert_eq!(
             tree,
-            Formula::implies(Formula::atom("P"), Formula::not(Formula::atom("Q")))
+            F::and(
+                F::and(F::implies(F::atom("P"), F::atom("Q")), F::not(F::atom("R"))),
+                F::or(F::atom("Q"), F::atom("R")),
+            )
         );
     }
 }
