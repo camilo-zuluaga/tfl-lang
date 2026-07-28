@@ -15,6 +15,21 @@ pub enum Token {
     Not,
 }
 
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Token::LeftParen => write!(f, "("),
+            Token::RightParen => write!(f, ")"),
+            Token::Not => write!(f, "¬"),
+            Token::And => write!(f, "∧"),
+            Token::Or => write!(f, "∨"),
+            Token::Implies => write!(f, "→"),
+            Token::Iff => write!(f, "↔"),
+            Token::Atom(name) => write!(f, "{name}"),
+        }
+    }
+}
+
 type Cursor<'a> = Peekable<Chars<'a>>;
 
 fn skip_comment(chars: &mut Cursor) {
