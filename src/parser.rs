@@ -52,25 +52,33 @@ pub struct Parser {
     tokens: Peekable<IntoIter<Token>>,
 }
 
+// we opted for a struct since we will be doing recursive descent
 impl Parser {
-    pub fn parse(t: Vec<Token>) -> Result<Formula, ParseError> {
-        let pit = t.into_iter().peekable();
-        let mut p = Parser { tokens: pit };
-        p.sentence()
+    pub fn new(tokens: Vec<Token>) -> Parser {
+        Parser {
+            tokens: tokens.into_iter().peekable(),
+        }
+    }
+
+    pub fn parse(&mut self) -> Result<Formula, ParseError> {
+        // we have to check for left overs here
+        // for example: (P -> ~Q) R would be parsed and returned to (P -> ~Q) without check
+        // which should not happen
+        let formula = self.sentence()?;
+        match self.advance() {
+            None => Ok(formula),
+            Some(t) => Err(ParseError::TrailingTokens(t))
+        }
     }
 
     fn advance(&mut self) -> Option<Token> {
         self.tokens.next()
     }
 
-    fn peek(&mut self) -> Option<&Token> {
-        self.tokens.peek()
-    }
-
     fn expect(&mut self, want: Token) -> Result<(), ParseError> {
         match self.advance() {
             Some(t) if t == want => Ok(()),
-            _ => Err(ParseError::Expected()),
+            found => Err(ParseError::Expected { want, found }),
         }
     }
 
@@ -94,23 +102,26 @@ impl Parser {
                     Some(Token::Or) => Ok(Formula::or(left, right)),
                     Some(Token::Implies) => Ok(Formula::implies(left, right)),
                     Some(Token::Iff) => Ok(Formula::iff(left, right)),
-                    found => Err(ParseError::Expected()),
+                    found => Err(ParseError::ExpectedConnective(found)),
                 }
             }
 
-            found => Err(ParseError::Expected()),
+            found => Err(ParseError::UnexpectedStart(found)),
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParseError {
-    Expected(),
+    Expected { want: Token, found: Option<Token> },
+    UnexpectedStart(Option<Token>),
+    ExpectedConnective(Option<Token>),
+    TrailingTokens(Token)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{lexer::tokenize, parser};
+    use crate::lexer::tokenize;
 
     use super::*;
     use Formula as F;
@@ -139,7 +150,7 @@ mod tests {
     #[test]
     fn lexer_and_parser_compose() {
         let tokens = tokenize("(P -> ~Q)").unwrap(); // lexer: string  → tokens
-        let tree = Parser::parse(tokens).unwrap(); // parser: tokens → tree
+        let tree = Parser::new(tokens).parse().unwrap(); // parser: tokens → tree
         assert_eq!(
             tree,
             Formula::implies(Formula::atom("P"), Formula::not(Formula::atom("Q")))
