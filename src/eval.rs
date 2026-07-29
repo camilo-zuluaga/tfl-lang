@@ -36,6 +36,17 @@ fn atoms_of(formula: &Formula) -> Vec<String> {
     v
 }
 
+fn assignment_for(i: usize, atoms: &[String]) -> HashMap<String, bool> {
+    let mut assignment: HashMap<String, bool> = HashMap::new();
+    for (j, atom) in atoms.iter().enumerate() {
+        // read bit j of i: shift it down to the lowest position, then mask it
+        // bit j is atom j's truth value in this row
+        let val = (i >> j) & 1 == 0;
+        assignment.insert(atom.clone(), val);
+    }
+    assignment
+}
+
 pub fn truth_table(formula: &Formula) {
     let atoms = atoms_of(formula);
     let n = atoms.len();
@@ -49,21 +60,22 @@ pub fn truth_table(formula: &Formula) {
     // 1 << n is the same as 2^n, left shift doubles the number and that is what we want
     // if we got 2 atoms, it means we will have 4 lines, 3 atoms will have 8 lines, and so on
     for i in 0..(1 << n) {
-        let mut assignment: HashMap<String, bool> = HashMap::new();
-        for (j, atom) in atoms.iter().enumerate() {
-            // read bit j of i: shift it down to the lowest position, then mask it
-            // bit j is atom j's truth value in this row
-            let val = (i >> j) & 1 == 0;
-            assignment.insert(atom.clone(), val);
-        }
+        let assignment = assignment_for(i, &atoms);
+        let res = eval(formula, &assignment);
 
         for atom in &atoms {
             let v = assignment[atom];
             print!("{} ", if v { "T" } else { "F" });
         }
 
-        let res = eval(formula, &assignment);
-        println!("| {}", if res { Style::new().bold().paint("T") } else { Style::new().bold().paint("F") });
+        println!(
+            "| {}",
+            if res {
+                Style::new().bold().paint("T")
+            } else {
+                Style::new().bold().paint("F")
+            }
+        );
     }
 }
 
