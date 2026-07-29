@@ -1,10 +1,11 @@
-use crate::parser::Parser;
+use crate::{parser::Parser, pipeline::PipelineError};
 
 use std::{env, fs, process::ExitCode};
 
 mod eval;
 mod lexer;
 mod parser;
+mod pipeline;
 mod repl;
 
 fn main() -> ExitCode {
@@ -34,16 +35,17 @@ fn run_file(path: &str) -> ExitCode {
 }
 
 fn run_prompt() -> ExitCode {
-    let _ = repl::run();
-    ExitCode::SUCCESS
+    match repl::run() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("tfl: repl error {e}");
+            ExitCode::FAILURE
+        }
+    }
 }
 
-fn run(source: &str) {
-    match lexer::tokenize(source) {
-        Ok(tokens) => match Parser::new(tokens).parse() {
-            Ok(formula) => eval::truth_table(&formula),
-            Err(e) => eprintln!("[parser error] {e}"),
-        },
-        Err(e) => eprintln!("lex error {e:?}"),
-    }
+fn run(source: &str) -> Result<(), PipelineError> {
+    let f = pipeline::parse_source(source)?;
+    eval::truth_table(&f);
+    Ok(())
 }
