@@ -15,6 +15,7 @@ pub enum Formula {
 
 impl Formula {
     // helper methods to avoid typing box::new 300 times
+    #[cfg(test)]
     pub fn atom(name: &str) -> Formula {
         Formula::Atom(name.to_string())
     }
