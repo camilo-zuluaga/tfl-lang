@@ -49,6 +49,8 @@ fn assignment_for(i: usize, atoms: &[String]) -> HashMap<String, bool> {
 
 fn result_column(formula: &Formula) -> Vec<bool> {
     let atoms = atoms_of(formula);
+    // 1 << n is the same as 2^n, left shift doubles the number and that is what we want
+    // if we got 2 atoms, it means we will have 4 lines, 3 atoms will have 8 lines, and so on
     (0..(1 << atoms.len()))
         .map(|i| eval(&formula, &assignment_for(i, &atoms)))
         .collect()
@@ -62,20 +64,30 @@ fn is_contradiction(column: &[bool]) -> bool {
     column.iter().all(|&b| !b)
 }
 
+fn check_semantic(b: &[bool]) {
+    if is_tautology(b) {
+        println!("{}", Style::new().bold().italic().paint("\ntautology."));
+    } else if is_contradiction(b) {
+        println!("{}", Style::new().bold().italic().paint("\ncontradiction."));
+    } else {
+        println!("{}", Style::new().bold().italic().paint("\ncontingent."));
+    }
+    println!();
+}
+
 pub fn truth_table(formula: &Formula) {
     let atoms = atoms_of(formula);
+    let col = result_column(&formula);
 
+    println!("");
     for atom in &atoms {
         print!("{atom} ");
     }
     println!("| {formula}");
     println!("{}", "-".repeat(formula.to_string().len()));
 
-    // 1 << n is the same as 2^n, left shift doubles the number and that is what we want
-    // if we got 2 atoms, it means we will have 4 lines, 3 atoms will have 8 lines, and so on
-    for i in 0..(1 << atoms.len()) {
+    for (i, res) in col.iter().enumerate() {
         let assignment = assignment_for(i, &atoms);
-        let res = eval(formula, &assignment);
 
         for atom in &atoms {
             let v = assignment[atom];
@@ -84,7 +96,7 @@ pub fn truth_table(formula: &Formula) {
 
         println!(
             "| {}",
-            if res {
+            if *res {
                 Style::new().bold().paint("T")
             } else {
                 Style::new().bold().paint("F")
@@ -92,14 +104,7 @@ pub fn truth_table(formula: &Formula) {
         );
     }
 
-    let col = result_column(&formula);
-    if is_tautology(&col) {
-        println!("{}", Style::new().italic().paint("\nTautology."));
-    } else if is_contradiction(&col) {
-        println!("{}", Style::new().italic().paint("\nContradiction."));
-    } else {
-        println!("{}", Style::new().italic().paint("\nContingent."));
-    }
+    check_semantic(&col);
 }
 
 fn eval(formula: &Formula, assignment: &HashMap<String, bool>) -> bool {
