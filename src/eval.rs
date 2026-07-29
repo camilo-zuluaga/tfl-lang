@@ -47,9 +47,19 @@ fn assignment_for(i: usize, atoms: &[String]) -> HashMap<String, bool> {
     assignment
 }
 
+fn result_column(formula: &Formula) -> Vec<bool> {
+    let atoms = atoms_of(formula);
+    (0..(1 << atoms.len()))
+        .map(|i| eval(&formula, &assignment_for(i, &atoms)))
+        .collect()
+}
+
+fn is_tautology(column: &[bool]) -> bool {
+    column.iter().all(|&b| b)
+}
+
 pub fn truth_table(formula: &Formula) {
     let atoms = atoms_of(formula);
-    let n = atoms.len();
 
     for atom in &atoms {
         print!("{atom} ");
@@ -59,7 +69,7 @@ pub fn truth_table(formula: &Formula) {
 
     // 1 << n is the same as 2^n, left shift doubles the number and that is what we want
     // if we got 2 atoms, it means we will have 4 lines, 3 atoms will have 8 lines, and so on
-    for i in 0..(1 << n) {
+    for i in 0..(1 << atoms.len()) {
         let assignment = assignment_for(i, &atoms);
         let res = eval(formula, &assignment);
 
@@ -76,6 +86,11 @@ pub fn truth_table(formula: &Formula) {
                 Style::new().bold().paint("F")
             }
         );
+    }
+
+    let col = result_column(&formula);
+    if is_tautology(&col) {
+        println!("{}", Style::new().italic().paint("\nTautology."));
     }
 }
 
