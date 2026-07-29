@@ -1,15 +1,11 @@
-use reedline::{DefaultPrompt, Reedline, Signal};
-use std::{env, fs, process::ExitCode};
-use {
-    crossterm::event::{KeyCode, KeyModifiers},
-    reedline::{EditCommand, Emacs, ReedlineEvent, default_emacs_keybindings},
-};
-
 use crate::parser::Parser;
+
+use std::{env, fs, process::ExitCode};
 
 mod eval;
 mod lexer;
 mod parser;
+mod repl;
 
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
@@ -38,34 +34,7 @@ fn run_file(path: &str) -> ExitCode {
 }
 
 fn run_prompt() -> ExitCode {
-    // just getting it done
-    let mut kb = default_emacs_keybindings();
-    for (ch, sym) in [('a', "∧"), ('o', "∨"), ('n', "¬"), ('i', "→"), ('b', "↔")] {
-        kb.add_binding(
-            KeyModifiers::CONTROL,
-            KeyCode::Char(ch),
-            ReedlineEvent::Edit(vec![EditCommand::InsertString(sym.to_string())]),
-        );
-    }
-    let edit_mode = Box::new(Emacs::new(kb));
-    let mut line_editor = Reedline::create().with_edit_mode(edit_mode);
-    let prompt = DefaultPrompt::default();
-
-    loop {
-        let sig = line_editor.read_line(&prompt);
-        match sig {
-            Ok(Signal::Success(buffer)) => {
-                println!("We processed: {}", buffer);
-            }
-            Ok(Signal::CtrlD) | Ok(Signal::CtrlC) => {
-                println!("\nAborted!");
-                break;
-            }
-            x => {
-                println!("Event: {:?}", x);
-            }
-        }
-    }
+    let _ = repl::run();
     ExitCode::SUCCESS
 }
 
