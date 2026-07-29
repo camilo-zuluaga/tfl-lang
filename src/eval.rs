@@ -35,6 +35,26 @@ fn atoms_of(formula: &Formula) -> Vec<String> {
     atoms
 }
 
+pub fn truth_table(formula: &Formula) {
+    let atoms = atoms_of(formula);
+    let n = atoms.len();
+
+    // 1 << n is the same as 2^n, left shift doubles the number and that is what we want
+    // if we got 2 atoms, it means we will have 4 lines, 3 atoms will have 8 lines
+    for i in 0..(1 << n) {
+        let mut assignment: HashMap<&String, bool> = HashMap::new();
+        for (j, atom) in atoms.iter().enumerate() {
+            // read bit j of i: shift it down to the lowest position, then mask it
+            // bit j is atom j's truth value in this row
+            let val = (i >> j) & 1 == 0;
+            assignment.insert(atom, val);
+        }
+
+        let res = eval(formula, &assignment);
+        println!("result: {res}");
+        println!("");
+    }
+}
 
 fn eval(formula: &Formula, assignment: &HashMap<&String, bool>) -> bool {
     match formula {
