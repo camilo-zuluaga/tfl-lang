@@ -97,6 +97,8 @@ pub fn truth_table(formula: &Formula) {
         println!("{}", Style::new().italic().paint("\nTautology."));
     } else if is_contradiction(&col) {
         println!("{}", Style::new().italic().paint("\nContradiction."));
+    } else {
+        println!("{}", Style::new().italic().paint("\nContingent."));
     }
 }
 
