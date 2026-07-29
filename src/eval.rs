@@ -1,3 +1,4 @@
+use ansiterm::Style;
 use std::collections::{HashMap, HashSet};
 
 use crate::parser::Formula;
@@ -30,12 +31,20 @@ fn collect_atoms(formula: &Formula, atoms: &mut HashSet<String>) {
 fn atoms_of(formula: &Formula) -> Vec<String> {
     let mut set = HashSet::new();
     collect_atoms(formula, &mut set);
-    set.into_iter().collect()
+    let mut v: Vec<String> = set.into_iter().collect();
+    v.sort();
+    v
 }
 
 pub fn truth_table(formula: &Formula) {
     let atoms = atoms_of(formula);
     let n = atoms.len();
+
+    for atom in &atoms {
+        print!("{atom} ");
+    }
+    println!("| {formula}");
+    println!("{}", "-".repeat(formula.to_string().len()));
 
     // 1 << n is the same as 2^n, left shift doubles the number and that is what we want
     // if we got 2 atoms, it means we will have 4 lines, 3 atoms will have 8 lines, and so on
@@ -48,9 +57,13 @@ pub fn truth_table(formula: &Formula) {
             assignment.insert(atom.clone(), val);
         }
 
+        for atom in &atoms {
+            let v = assignment[atom];
+            print!("{} ", if v { "T" } else { "F" });
+        }
+
         let res = eval(formula, &assignment);
-        println!("result: {res}");
-        println!("");
+        println!("| {}", if res { Style::new().bold().paint("T") } else { Style::new().bold().paint("F") });
     }
 }
 
