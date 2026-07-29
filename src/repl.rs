@@ -4,12 +4,14 @@ use reedline::{
 };
 use std::{borrow::Cow, io};
 
+use crate::{eval, pipeline::parse_source};
+
 #[derive(Clone)]
 pub struct SimpleColoredPrompt;
 
 impl Prompt for SimpleColoredPrompt {
     fn render_prompt_left(&self) -> Cow<'_, str> {
-        Cow::Borrowed("\x1b[35m>>> \x1b[0m")
+        Cow::Borrowed("\x1b[35mtfl> \x1b[0m")
     }
 
     fn render_prompt_right(&self) -> Cow<'_, str> {
@@ -55,13 +57,22 @@ pub fn run() -> io::Result<()> {
         let sig = line_editor.read_line(&prompt)?;
         match sig {
             Signal::Success(buffer) => {
-                println!("We processed: {buffer}");
+                run_formula(&buffer);
             }
             Signal::CtrlD | Signal::CtrlC => {
                 println!("\nBye!");
                 break Ok(());
             }
             _ => {}
+        }
+    }
+}
+
+fn run_formula(line: &str) {
+    match parse_source(line) {
+        Err(e) => eprintln!(" {e}"),
+        Ok(formula) => {
+            eval::truth_table(&formula);
         }
     }
 }
