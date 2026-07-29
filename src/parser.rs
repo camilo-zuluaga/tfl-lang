@@ -42,8 +42,8 @@ impl fmt::Display for Formula {
             Formula::Not(inner) => write!(f, "¬{inner}"),
             Formula::And(l, r) => write!(f, "({l} ∧ {r})"),
             Formula::Or(l, r) => write!(f, "({l} ∨ {r})"),
-            Formula::Implies(l, r) => write!(f, "({l} → {r})"),
-            Formula::Iff(l, r) => write!(f, "({l} ↔ {r})"),
+            Formula::Implies(l, r) => write!(f, "({l} →  {r})"),
+            Formula::Iff(l, r) => write!(f, "({l} ↔  {r})"),
         }
     }
 }
