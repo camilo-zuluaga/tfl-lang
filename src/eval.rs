@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::parser::Formula;
 
@@ -33,4 +33,16 @@ fn atoms_of(formula: &Formula) -> Vec<String> {
     let mut atoms: Vec<String> = set.into_iter().collect();
     atoms.sort();
     atoms
+}
+
+
+fn eval(formula: &Formula, assignment: &HashMap<&String, bool>) -> bool {
+    match formula {
+        Formula::Atom(name) => assignment[name],
+        Formula::Not(inner) => !eval(inner, assignment),
+        Formula::And(l, r) => eval(l, assignment) && eval(r, assignment),
+        Formula::Or(l, r) => eval(l, assignment) || eval(r, assignment),
+        Formula::Implies(l, r) => !eval(l, assignment) || eval(r, assignment),
+        Formula::Iff(l, r) => eval(l, assignment) == eval(r, assignment),
+    }
 }
