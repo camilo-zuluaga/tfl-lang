@@ -58,6 +58,10 @@ fn is_tautology(column: &[bool]) -> bool {
     column.iter().all(|&b| b)
 }
 
+fn is_contradiction(column: &[bool]) -> bool {
+    column.iter().all(|&b| !b)
+}
+
 pub fn truth_table(formula: &Formula) {
     let atoms = atoms_of(formula);
 
@@ -91,6 +95,8 @@ pub fn truth_table(formula: &Formula) {
     let col = result_column(&formula);
     if is_tautology(&col) {
         println!("{}", Style::new().italic().paint("\nTautology."));
+    } else if is_contradiction(&col) {
+        println!("{}", Style::new().italic().paint("\nContradiction."));
     }
 }
 
