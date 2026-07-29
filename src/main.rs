@@ -1,4 +1,4 @@
-use crate::{parser::Parser, pipeline::PipelineError};
+use crate::pipeline::PipelineError;
 
 use std::{env, fs, process::ExitCode};
 
@@ -22,13 +22,18 @@ fn main() -> ExitCode {
 }
 
 fn run_file(path: &str) -> ExitCode {
-    match fs::read_to_string(path) {
-        Ok(content) => {
-            run(&content);
-            ExitCode::SUCCESS
-        }
+    let content = match fs::read_to_string(path) {
+        Ok(c) => c,
         Err(e) => {
             eprintln!("tfl: cannot read '{path}': {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    match run(&content) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("tfl: {e}");
             ExitCode::FAILURE
         }
     }
