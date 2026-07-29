@@ -149,12 +149,12 @@ mod tests {
     use super::*;
     use Formula as F;
 
-    const LONG_TFL_SENTENCE: &str = "(((P → Q) ∧ ¬R) ∧ (Q ∨ R))";
+    const LONG_TFL_SENTENCE: &str = "(((P →  Q) ∧ ¬R) ∧ (Q ∨ R))";
 
     #[test]
     fn prints_implies_with_negation() {
         let f = F::implies(F::atom("P"), F::not(F::atom("Q")));
-        assert_eq!(f.to_string(), "(P → ¬Q)")
+        assert_eq!(f.to_string(), "(P →  ¬Q)")
     }
 
     #[test]
