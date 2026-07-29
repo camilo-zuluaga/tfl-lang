@@ -1,8 +1,7 @@
 use std::fmt;
 
 use crate::{
-    lexer::{self, LexError},
-    parser::{Formula, ParseError, Parser},
+    ast::Formula, lexer::{self, LexError}, parser::{ParseError, Parser},
 };
 
 pub enum PipelineError {

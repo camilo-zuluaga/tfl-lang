@@ -1,7 +1,7 @@
 use ansiterm::Style;
 use std::collections::{HashMap, HashSet};
 
-use crate::parser::Formula;
+use crate::ast::Formula;
 
 fn collect_atoms(formula: &Formula, atoms: &mut HashSet<String>) {
     match formula {

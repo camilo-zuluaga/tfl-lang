@@ -7,6 +7,7 @@ mod lexer;
 mod parser;
 mod pipeline;
 mod repl;
+mod ast;
 
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
