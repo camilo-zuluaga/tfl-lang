@@ -79,4 +79,33 @@ mod test {
         assert_eq!(eval(&f, &assign(&vec![("A", true)])), false);
         assert_eq!(eval(&f, &assign(&vec![("A", false)])), true);
     }
+
+    #[test]
+    fn and_validation() {
+        let f = Formula::and(Formula::atom("A"), Formula::atom("B"));
+        assert_eq!(eval(&f, &assign(&vec![("A", true), ("B", false)])), false);
+        assert_eq!(eval(&f, &assign(&vec![("A", true), ("B", true)])), true);
+    }
+
+    #[test]
+    fn or_validaton() {
+        let f = Formula::or(Formula::atom("A"), Formula::atom("B"));
+        assert_eq!(eval(&f, &assign(&vec![("A", true), ("B", false)])), true);
+        assert_eq!(eval(&f, &assign(&vec![("A", false), ("B", false)])), false);
+    }
+
+    #[test]
+    fn implies_validation() {
+        let f = Formula::implies(Formula::atom("A"), Formula::atom("B"));
+        assert_eq!(eval(&f, &assign(&vec![("A", true), ("B", false)])), false);
+        assert_eq!(eval(&f, &assign(&vec![("A", false), ("B", true)])), true);
+    }
+
+    #[test]
+    fn iff_validation() {
+        let f = Formula::implies(Formula::atom("A"), Formula::atom("B"));
+        assert_eq!(eval(&f, &assign(&vec![("A", true), ("B", false)])), false);
+        assert_eq!(eval(&f, &assign(&vec![("A", true), ("B", true)])), true);
+        assert_eq!(eval(&f, &assign(&vec![("A", false), ("B", false)])), true);
+    }
 }
