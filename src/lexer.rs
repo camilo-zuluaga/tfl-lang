@@ -134,7 +134,7 @@ mod tests {
 
     #[test]
     fn scans_unicode() {
-        let t = tokenize("((P → Q ∧ ¬R) ∧ (Q ∨ R))").unwrap();
+        let t = tokenize("((P →  Q ∧ ¬R) ∧ (Q ∨ R))").unwrap();
         assert_eq!(
             t,
             vec![

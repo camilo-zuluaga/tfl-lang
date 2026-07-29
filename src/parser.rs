@@ -63,7 +63,7 @@ impl Parser {
 
     pub fn parse(&mut self) -> Result<Formula, ParseError> {
         // we have to check for left overs here
-        // for example: (P -> ~Q) R would be parsed and returned to (P -> ~Q) without check
+        // for example: (P -> ~Q) R would be parsed and returned as (P -> ~Q) without check,
         // which should not happen
         let formula = self.sentence()?;
         match self.advance() {
