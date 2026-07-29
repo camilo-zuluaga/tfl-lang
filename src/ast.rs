@@ -1,0 +1,76 @@
+use std::fmt;
+
+#[derive(Debug, PartialEq)]
+pub enum Formula {
+    Atom(String),
+    Not(Box<Formula>),
+    And(Box<Formula>, Box<Formula>),
+    Or(Box<Formula>, Box<Formula>),
+    Implies(Box<Formula>, Box<Formula>),
+    Iff(Box<Formula>, Box<Formula>),
+}
+
+impl Formula {
+    // helper methods to avoid typing box::new 300 times
+    #[cfg(test)]
+    pub fn atom(name: &str) -> Formula {
+        Formula::Atom(name.to_string())
+    }
+    pub fn not(f: Formula) -> Formula {
+        Formula::Not(Box::new(f))
+    }
+    pub fn and(l: Formula, r: Formula) -> Formula {
+        Formula::And(Box::new(l), Box::new(r))
+    }
+    pub fn or(l: Formula, r: Formula) -> Formula {
+        Formula::Or(Box::new(l), Box::new(r))
+    }
+    pub fn implies(l: Formula, r: Formula) -> Formula {
+        Formula::Implies(Box::new(l), Box::new(r))
+    }
+    pub fn iff(l: Formula, r: Formula) -> Formula {
+        Formula::Iff(Box::new(l), Box::new(r))
+    }
+}
+
+impl fmt::Display for Formula {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Formula::Atom(name) => write!(f, "{name}"),
+            Formula::Not(inner) => write!(f, "¬{inner}"),
+            Formula::And(l, r) => write!(f, "({l} ∧ {r})"),
+            Formula::Or(l, r) => write!(f, "({l} ∨ {r})"),
+            Formula::Implies(l, r) => write!(f, "({l} → {r})"),
+            Formula::Iff(l, r) => write!(f, "({l} ↔ {r})"),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use Formula as F;
+
+    const LONG_TFL_SENTENCE: &str = "(((P → Q) ∧ ¬R) ∧ (Q ∨ R))";
+
+    #[test]
+    fn prints_implies_with_negation() {
+        let f = F::implies(F::atom("P"), F::not(F::atom("Q")));
+        assert_eq!(f.to_string(), "(P → ¬Q)")
+    }
+
+    #[test]
+    fn prints_double_negation() {
+        let f = F::not(F::not(F::atom("A")));
+        assert_eq!(f.to_string(), "¬¬A")
+    }
+
+    #[test]
+    fn prints_nested_binary() {
+        let f = F::and(
+            F::and(F::implies(F::atom("P"), F::atom("Q")), F::not(F::atom("R"))),
+            F::or(F::atom("Q"), F::atom("R")),
+        );
+        assert_eq!(f.to_string(), LONG_TFL_SENTENCE)
+    }
+}
