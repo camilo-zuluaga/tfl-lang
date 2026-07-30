@@ -47,6 +47,7 @@ fn commands() -> ExampleHighlighter {
         ":contra".into(),
         ":entail".into(),
         ":help".into(),
+        ":eq".into(),
     ]);
     commands.change_colors(Color::Blue, Color::Default, Color::Default);
     commands
@@ -120,8 +121,47 @@ fn run_command(cmd: &str) {
         "taut" => check_taut(rest),
         "contra" => check_contra(rest),
         "entail" => check_entail(rest),
+        "eq" => check_eq(rest),
         other => println!(" unknown command: {other}"),
     }
+}
+
+fn check_eq(input: &str) {
+    let parts: Vec<&str> = input.splitn(2, ',').collect();
+    if parts.len() != 2 {
+        eprintln!(" usage: :eq <formula>, <formula>");
+        return;
+    }
+
+    let (f1, f2) = match (
+        pipeline::parse_source(parts[0].trim()),
+        pipeline::parse_source(parts[1].trim()),
+    ) {
+        (Ok(a), Ok(b)) => (a, b),
+        (Err(e), _) | (_, Err(e)) => {
+            eprintln!(" {e}");
+            return;
+        }
+    };
+
+    println!();
+    match eval::equivalent(&f1, &f2) {
+        None => println!("{}", Style::new().bold().italic().paint(" equivalent.")),
+        Some(i) => {
+            let atoms = eval::atoms_of_pair(&f1, &f2);
+            let asn = eval::assignment_for(i, &atoms);
+            let row: Vec<String> = atoms
+                .iter()
+                .map(|a| format!("{a}={}", if asn[a] { "T" } else { "F" }))
+                .collect();
+            println!(
+                " {} {}",
+                Style::new().bold().italic().paint(" not equivalent, differ when: "),
+                row.join(", ")
+            );
+        }
+    }
+    println!();
 }
 
 fn check_entail(input: &str) {
