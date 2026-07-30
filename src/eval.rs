@@ -28,7 +28,7 @@ fn collect_atoms(formula: &Formula, atoms: &mut HashSet<String>) {
     }
 }
 
-fn atoms_of(formula: &Formula) -> Vec<String> {
+pub fn atoms_of(formula: &Formula) -> Vec<String> {
     let mut set = HashSet::new();
     collect_atoms(formula, &mut set);
     let mut v: Vec<String> = set.into_iter().collect();
@@ -36,12 +36,12 @@ fn atoms_of(formula: &Formula) -> Vec<String> {
     v
 }
 
-fn assignment_for(i: usize, atoms: &[String]) -> HashMap<String, bool> {
+pub fn assignment_for(i: usize, atoms: &[String]) -> HashMap<String, bool> {
     let mut assignment: HashMap<String, bool> = HashMap::new();
     for (j, atom) in atoms.iter().enumerate() {
         // read bit j of i: shift it down to the lowest position, then mask it
         // bit j is atom j's truth value in this row
-        let val = (i >> j) & 1 == 0;
+        let val = (i >> (atoms.len() - 1 - j)) & 1 == 0;
         assignment.insert(atom.clone(), val);
     }
     assignment
