@@ -41,6 +41,34 @@ keyboard-friendly ASCII, and the printer always emits the book's notation:
 Atoms are an uppercase letter with optional digits (`P`, `Q`, `S1`, `E2`), matching
 the book's notation. Comments run from `--` to end of line.
 
+## Installation
+
+`tfl` is written in Rust. You'll need a Rust toolchain
+
+### From source
+
+```sh
+git clone https://github.com/<you>/tfl
+cd tfl
+cargo install --path .
+```
+Once it finishes, `tfl` is available from anywhere:
+
+```sh
+$ tfl                    # start the interactive REPL
+$ tfl argument.tfl       # evaluate a file
+```
+
+### Running without installing
+
+If you'd rather not install it system-wide, you can run it straight from the
+cloned repository:
+
+```sh
+cargo run                   # REPL
+cargo run -- argument.tfl   # file mode
+```
+
 ## Usage
 
 Interactive:
