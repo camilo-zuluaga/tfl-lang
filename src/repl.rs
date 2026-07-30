@@ -100,7 +100,46 @@ fn run_command(cmd: &str) {
 
     match word {
         "taut" => check_taut(rest),
+        "contra" => check_contra(rest),
         other => println!(" unknown command: {other}"),
+    }
+}
+
+fn check_contra(f: &str) {
+    if f.is_empty() {
+        println!(" usage :contra <formula>");
+        return;
+    }
+
+    match pipeline::parse_source(f) {
+        Err(e) => eprintln!(" {e}"),
+        Ok(formula) => {
+            let col = eval::result_column(&formula);
+            println!();
+            if eval::is_contradiction(&col) {
+                println!(
+                    " {formula} {}",
+                    Style::new().bold().italic().paint("is a contradiction")
+                );
+            } else {
+                let atoms = eval::atoms_of(&formula);
+                let i = col.iter().position(|&b| b).unwrap();
+                let asn = eval::assignment_for(i, &atoms);
+                let row: Vec<String> = atoms
+                    .iter()
+                    .map(|a| format!("{a}={}", if asn[a] { "T" } else { "F" }))
+                    .collect();
+                println!(
+                    " {} {}",
+                    Style::new()
+                        .bold()
+                        .italic()
+                        .paint(" not a contradiction, true when "),
+                    row.join(", ")
+                );
+            }
+            println!();
+        }
     }
 }
 
@@ -117,7 +156,7 @@ fn check_taut(f: &str) {
             println!();
             if eval::is_tautology(&col) {
                 println!(
-                    "{formula} {}",
+                    " {formula} {}",
                     Style::new().bold().italic().paint("is a tautology")
                 )
             } else {
@@ -129,7 +168,14 @@ fn check_taut(f: &str) {
                     .iter()
                     .map(|a| format!("{a}={}", if asn[a] { "T" } else { "F" }))
                     .collect();
-                println!(" {} {}", Style::new().bold().italic().paint(" not a tautology, false when "), row.join(", "));
+                println!(
+                    " {} {}",
+                    Style::new()
+                        .bold()
+                        .italic()
+                        .paint(" not a tautology, false when "),
+                    row.join(", ")
+                );
             }
             println!();
         }
