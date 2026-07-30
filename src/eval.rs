@@ -28,6 +28,17 @@ fn collect_atoms(formula: &Formula, atoms: &mut HashSet<String>) {
     }
 }
 
+pub fn atoms_of_all(formulas: &[Formula], conclusion: &Formula) -> Vec<String> {
+    let mut set = HashSet::new();
+    for formula in formulas {
+        collect_atoms(formula, &mut set);
+    }
+    collect_atoms(conclusion, &mut set);
+    let mut v: Vec<String> = set.into_iter().collect();
+    v.sort();
+    v
+}
+
 pub fn atoms_of(formula: &Formula) -> Vec<String> {
     let mut set = HashSet::new();
     collect_atoms(formula, &mut set);
@@ -56,12 +67,30 @@ pub fn result_column(formula: &Formula) -> Vec<bool> {
         .collect()
 }
 
+pub fn result_column_over(formula: &Formula, atoms: &[String]) -> Vec<bool> {
+    (0..(1 << atoms.len()))
+        .map(|i| eval(formula, &assignment_for(i, atoms)))
+        .collect()
+}
+
 pub fn is_tautology(column: &[bool]) -> bool {
     column.iter().all(|&b| b)
 }
 
 pub fn is_contradiction(column: &[bool]) -> bool {
     column.iter().all(|&b| !b)
+}
+
+pub fn entails(premises: &[Formula], conclusion: &Formula) -> Option<usize> {
+    let atoms = atoms_of_all(premises, conclusion);
+
+    let premise_cols: Vec<Vec<bool>> = premises
+        .iter()
+        .map(|p| result_column_over(p, &atoms))
+        .collect();
+    let conclusion_col = result_column_over(conclusion, &atoms);
+
+    (0..conclusion_col.len()).find(|&i| premise_cols.iter().all(|col| col[i]) && !conclusion_col[i])
 }
 
 fn check_semantic(b: &[bool]) {
@@ -77,7 +106,7 @@ fn check_semantic(b: &[bool]) {
 
 pub fn truth_table(formula: &Formula) {
     let atoms = atoms_of(formula);
-    let col = result_column(&formula);
+    let col = result_column(formula);
 
     println!("");
     for atom in &atoms {
