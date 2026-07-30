@@ -6,7 +6,8 @@ use reedline::{
 use std::{borrow::Cow, io};
 
 use crate::{
-    eval,
+    ast::Formula,
+    eval::{self},
     pipeline::{self, parse_source},
 };
 
@@ -101,8 +102,60 @@ fn run_command(cmd: &str) {
     match word {
         "taut" => check_taut(rest),
         "contra" => check_contra(rest),
+        "entail" => check_entail(rest),
         other => println!(" unknown command: {other}"),
     }
+}
+
+fn check_entail(input: &str) {
+    let (prem, concl) = match input.split_once("|=") {
+        Some((p, c)) => (p.trim(), c.trim()),
+        None => {
+            eprintln!(" usage: :entails p1, p2 |= conclusion");
+            return;
+        }
+    };
+
+    let mut premises: Vec<Formula> = Vec::new();
+    for s in prem.split(',') {
+        let s = s.trim();
+        if s.is_empty() {
+            continue;
+        }
+        match pipeline::parse_source(s) {
+            Ok(f) => premises.push(f),
+            Err(e) => {
+                eprintln!(" premise error: {e}");
+            }
+        }
+    }
+
+    let conclusion = match pipeline::parse_source(concl) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!(" conclusion error: {e}");
+            return;
+        }
+    };
+
+    println!();
+    match eval::entails(&premises, &conclusion) {
+        None => println!("{}", Style::new().bold().italic().paint(" entails.")),
+        Some(i) => {
+            let atoms = eval::atoms_of_all(&premises, &conclusion);
+            let asn = eval::assignment_for(i, &atoms);
+            let row: Vec<String> = atoms
+                .iter()
+                .map(|a| format!("{a}={}", if asn[a] { "T" } else { "F" }))
+                .collect();
+            println!(
+                " {} {}",
+                Style::new().bold().italic().paint(" does not entail: "),
+                row.join(", ")
+            );
+        }
+    }
+    println!();
 }
 
 fn check_contra(f: &str) {
