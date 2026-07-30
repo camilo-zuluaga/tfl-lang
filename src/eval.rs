@@ -47,7 +47,7 @@ fn assignment_for(i: usize, atoms: &[String]) -> HashMap<String, bool> {
     assignment
 }
 
-fn result_column(formula: &Formula) -> Vec<bool> {
+pub fn result_column(formula: &Formula) -> Vec<bool> {
     let atoms = atoms_of(formula);
     // 1 << n is the same as 2^n, left shift doubles the number and that is what we want
     // if we got 2 atoms, it means we will have 4 lines, 3 atoms will have 8 lines, and so on
@@ -56,7 +56,7 @@ fn result_column(formula: &Formula) -> Vec<bool> {
         .collect()
 }
 
-fn is_tautology(column: &[bool]) -> bool {
+pub fn is_tautology(column: &[bool]) -> bool {
     column.iter().all(|&b| b)
 }
 
