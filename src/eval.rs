@@ -60,7 +60,7 @@ pub fn is_tautology(column: &[bool]) -> bool {
     column.iter().all(|&b| b)
 }
 
-fn is_contradiction(column: &[bool]) -> bool {
+pub fn is_contradiction(column: &[bool]) -> bool {
     column.iter().all(|&b| !b)
 }
 
