@@ -28,6 +28,15 @@ fn collect_atoms(formula: &Formula, atoms: &mut HashSet<String>) {
     }
 }
 
+pub fn atoms_of_pair(f1: &Formula, f2: &Formula) -> Vec<String> {
+    let mut set = HashSet::new();
+    collect_atoms(f1, &mut set);
+    collect_atoms(f2, &mut set);
+    let mut v: Vec<String> = set.into_iter().collect();
+    v.sort();
+    v
+}
+
 pub fn atoms_of_all(formulas: &[Formula], conclusion: &Formula) -> Vec<String> {
     let mut set = HashSet::new();
     for formula in formulas {
@@ -91,6 +100,14 @@ pub fn entails(premises: &[Formula], conclusion: &Formula) -> Option<usize> {
     let conclusion_col = result_column_over(conclusion, &atoms);
 
     (0..conclusion_col.len()).find(|&i| premise_cols.iter().all(|col| col[i]) && !conclusion_col[i])
+}
+
+pub fn equivalent(f1: &Formula, f2: &Formula) -> Option<usize> {
+    let atoms = atoms_of_pair(f1, f2);
+    let col1 = result_column_over(f1, &atoms);
+    let col2 = result_column_over(f2, &atoms);
+
+    (0..col1.len()).find(|&i| col1[i] != col2[i])
 }
 
 fn check_semantic(b: &[bool]) {
