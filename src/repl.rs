@@ -120,6 +120,16 @@ fn check_taut(f: &str) {
                     "{formula} {}",
                     Style::new().bold().italic().paint("is a tautology")
                 )
+            } else {
+                let atoms = eval::atoms_of(&formula);
+                let i = col.iter().position(|&b| !b).unwrap(); // this unwrap is `safe` since is not
+                // a tautology, it means there is at least one False
+                let asn = eval::assignment_for(i, &atoms);
+                let row: Vec<String> = atoms
+                    .iter()
+                    .map(|a| format!("{a}={}", if asn[a] { "T" } else { "F" }))
+                    .collect();
+                println!(" {} {}", Style::new().bold().italic().paint(" not a tautology, false when "), row.join(", "));
             }
             println!();
         }
