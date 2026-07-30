@@ -1,10 +1,17 @@
 [package]
-name = "tfl-lang"
+name = "tfl"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+description = "A truth-functional logic interpreter, built from a textbook"
+repository = "https://github.com/camilo-zuluaga/tfl-lang"
 
 [dependencies]
 ansiterm = "0.12.2"
 crossterm = "0.29.0"
 nu-ansi-term = "0.50.3"
 reedline = "0.49.0"
+
+[[bin]]
+name = "tfl"
+path = "src/main.rs"

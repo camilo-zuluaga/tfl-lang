@@ -573,7 +573,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tfl-lang"
+name = "tfl"
 version = "0.1.0"
 dependencies = [
  "ansiterm",
