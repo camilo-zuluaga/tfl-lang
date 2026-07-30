@@ -72,7 +72,7 @@ pub fn result_column(formula: &Formula) -> Vec<bool> {
     // 1 << n is the same as 2^n, left shift doubles the number and that is what we want
     // if we got 2 atoms, it means we will have 4 lines, 3 atoms will have 8 lines, and so on
     (0..(1 << atoms.len()))
-        .map(|i| eval(&formula, &assignment_for(i, &atoms)))
+        .map(|i| eval(formula, &assignment_for(i, &atoms)))
         .collect()
 }
 
@@ -125,7 +125,7 @@ pub fn truth_table(formula: &Formula) {
     let atoms = atoms_of(formula);
     let col = result_column(formula);
 
-    println!("");
+    println!();
     for atom in &atoms {
         print!("{atom} ");
     }
