@@ -1,10 +1,14 @@
+use ansiterm::Style;
 use reedline::{
     EditCommand, Emacs, KeyCode, KeyModifiers, Keybindings, Prompt, PromptEditMode,
     PromptHistorySearch, Reedline, ReedlineEvent, Signal, default_emacs_keybindings,
 };
 use std::{borrow::Cow, io};
 
-use crate::{eval, pipeline::parse_source};
+use crate::{
+    eval,
+    pipeline::{self, parse_source},
+};
 
 #[derive(Clone)]
 pub struct SimpleColoredPrompt;
@@ -57,7 +61,7 @@ pub fn run() -> io::Result<()> {
         let sig = line_editor.read_line(&prompt)?;
         match sig {
             Signal::Success(buffer) => {
-                run_formula(&buffer);
+                process_line(&buffer);
             }
             Signal::CtrlD | Signal::CtrlC => {
                 println!("\nBye!");
@@ -68,11 +72,56 @@ pub fn run() -> io::Result<()> {
     }
 }
 
+fn process_line(line: &str) {
+    if line.is_empty() {
+        return;
+    }
+    if let Some(cmd) = line.strip_prefix(":") {
+        run_command(cmd);
+    } else {
+        run_formula(line);
+    }
+}
+
 fn run_formula(line: &str) {
     match parse_source(line) {
         Err(e) => eprintln!(" {e}"),
         Ok(formula) => {
             eval::truth_table(&formula);
+        }
+    }
+}
+
+fn run_command(cmd: &str) {
+    let (word, rest) = match cmd.split_once(char::is_whitespace) {
+        Some((w, r)) => (w, r.trim()),
+        None => (cmd, ""),
+    };
+
+    match word {
+        "taut" => check_taut(rest),
+        other => println!(" unknown command: {other}"),
+    }
+}
+
+fn check_taut(f: &str) {
+    if f.is_empty() {
+        println!(" usage: :taut <formula>");
+        return;
+    }
+
+    match pipeline::parse_source(f) {
+        Err(e) => eprintln!(" {e}"),
+        Ok(formula) => {
+            let col = eval::result_column(&formula);
+            println!();
+            if eval::is_tautology(&col) {
+                println!(
+                    "{formula} {}",
+                    Style::new().bold().italic().paint("is a tautology")
+                )
+            }
+            println!();
         }
     }
 }
