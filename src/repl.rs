@@ -1,7 +1,9 @@
 use ansiterm::Style;
+use nu_ansi_term::Color;
 use reedline::{
-    EditCommand, Emacs, KeyCode, KeyModifiers, Keybindings, Prompt, PromptEditMode,
-    PromptHistorySearch, Reedline, ReedlineEvent, Signal, default_emacs_keybindings,
+    EditCommand, Emacs, ExampleHighlighter, KeyCode, KeyModifiers, Keybindings, Prompt,
+    PromptEditMode, PromptHistorySearch, Reedline, ReedlineEvent, Signal,
+    default_emacs_keybindings,
 };
 use std::{borrow::Cow, io};
 
@@ -39,6 +41,17 @@ impl Prompt for SimpleColoredPrompt {
     }
 }
 
+fn commands() -> ExampleHighlighter {
+    let mut commands = ExampleHighlighter::new(vec![
+        ":taut".into(),
+        ":contra".into(),
+        ":entail".into(),
+        ":help".into(),
+    ]);
+    commands.change_colors(Color::Blue, Color::Default, Color::Default);
+    commands
+}
+
 fn custom_keybindings() -> Keybindings {
     let mut kb = default_emacs_keybindings();
     for (ch, sym) in [('a', "∧"), ('o', "∨"), ('n', "¬"), ('i', "→"), ('b', "↔")] {
@@ -55,7 +68,10 @@ pub fn run() -> io::Result<()> {
     println!("TFL REPL.\nAbort with Ctrl-C or Ctrl-D");
 
     let edit_mode = Box::new(Emacs::new(custom_keybindings()));
-    let mut line_editor = Reedline::create().with_edit_mode(edit_mode);
+    let cmds = Box::new(commands());
+    let mut line_editor = Reedline::create()
+        .with_edit_mode(edit_mode)
+        .with_highlighter(cmds);
     let prompt = SimpleColoredPrompt;
 
     loop {
@@ -100,6 +116,7 @@ fn run_command(cmd: &str) {
     };
 
     match word {
+        "help" => print_help(),
         "taut" => check_taut(rest),
         "contra" => check_contra(rest),
         "entail" => check_entail(rest),
@@ -233,4 +250,32 @@ fn check_taut(f: &str) {
             println!();
         }
     }
+}
+
+fn print_help() {
+    println!(
+        "\
+tfl — truth-functional logic
+
+  Type a formula to see its truth table and classification:
+    (P -> Q) & ~R
+
+  Connectives (ASCII accepted, printed as symbols):
+    ~ !         negation      ¬
+    &           conjunction   ∧
+    |           disjunction   ∨
+    ->          conditional   →
+    <->         biconditional ↔
+    atoms: uppercase + digits (P, Q, S1)   comments: -- to end of line
+
+  Commands:
+    :taut     <formula>              is it a tautology?
+    :contra   <formula>              is it a contradiction?
+    :entails  <p1>, <p2> |= <concl>  do the premises entail the conclusion?
+    :help                            this message
+    :quit                            exit  (or Ctrl-D)
+
+  Symbol entry: Alt+a ∧   Alt+o ∨   Alt+n ¬   Alt+i →   Alt+b ↔
+"
+    );
 }
