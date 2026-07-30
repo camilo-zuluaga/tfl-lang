@@ -578,6 +578,7 @@ version = "0.1.0"
 dependencies = [
  "ansiterm",
  "crossterm",
+ "nu-ansi-term",
  "reedline",
 ]
 
