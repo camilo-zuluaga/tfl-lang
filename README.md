@@ -48,7 +48,7 @@ the book's notation. Comments run from `--` to end of line.
 ### From source
 
 ```sh
-git clone https://github.com/<you>/tfl
+git clone https://github.com/camilo-zuluaga/tfl
 cd tfl
 cargo install --path .
 ```
